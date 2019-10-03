@@ -14,13 +14,17 @@ class NovaImportCard extends Card
      */
     public $width = '1/2';
 
+    public static $name = 'nova-import-card';
+
+    /**
+     * @param \Laravel\Nova\Resource|string $resource
+     */
     public function __construct($resource)
     {
         parent::__construct();
+
         $this->withMeta([
-            'fields' => [
-                new File('File'),
-            ],
+            'fields' => [new File('File')],
             'resourceLabel' => $resource::label(),
             'resource' => $resource::uriKey(),
         ]);
@@ -33,6 +37,6 @@ class NovaImportCard extends Card
      */
     public function component()
     {
-        return 'nova-import-card';
+        return static::$name;
     }
 }

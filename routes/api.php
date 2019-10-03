@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,4 +17,5 @@ use Illuminate\Support\Facades\Route;
 //     //
 // });
 
-Route::post('/endpoint/{resource}', \Sparclex\NovaImportCard\ImportController::class.'@handle');
+Route::post('/endpoint/{resource}', \Sparclex\NovaImportCard\ImportController::class . '@handle');
+Route::get('/endpoint/{resource}/progress/{status}', \Sparclex\NovaImportCard\ImportController::class . '@progress');

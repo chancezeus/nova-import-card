@@ -2,40 +2,79 @@
 
 namespace Sparclex\NovaImportCard;
 
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\Importable;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Laravel\Nova\Resource;
+use Sparclex\NovaImportCard\Contracts\Importer;
+use Sparclex\NovaImportCard\Helpers\Importable;
 
-class BasicImporter implements ToModel, WithValidation, WithHeadingRow
+class BasicImporter implements Importer
 {
     use Importable;
+    use InteractsWithQueue;
+    use SerializesModels;
 
-    protected $attributes;
+    /** @var \Laravel\Nova\Resource|string */
+    protected $resourceClass;
 
-    protected $rules;
-
-    protected $modelClass;
-
-    public function __construct($resource, $attributes, $rules, $modelClass)
+    /**
+     * BasicImporter constructor.
+     * @param string $resourceClass
+     */
+    public function __construct(string $resourceClass)
     {
-        $this->resource = $resource;
-        $this->attributes = $attributes;
-        $this->rules = $rules;
-        $this->modelClass = $modelClass;
+        $this->resourceClass = $resourceClass;
     }
 
+    /**
+     * @param array $row
+     *
+     * @return Model|Model[]|null
+     */
     public function model(array $row)
     {
-        [$model, $callbacks] = $this->resource::fill(
-            new ImportNovaRequest($row), $this->resource::newModel()
-        );
+        /** @var \Laravel\Nova\Resource $resourceClass */
+        $resourceClass = $this->resourceClass;
+
+        [$model] = $resourceClass::fill(new ImportNovaRequest($this->getResource(), $row), $this->getModel());
 
         return $model;
     }
 
+    /**
+     * @return array
+     */
     public function rules(): array
     {
-        return $this->rules;
+        /** @var \Laravel\Nova\Resource $resourceClass */
+        $resourceClass = $this->resourceClass;
+
+        return $resourceClass::rulesForCreation(new ImportNovaRequest($this->getResource()));
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function getModel(): Model
+    {
+        /** @var \Laravel\Nova\Resource $resourceClass */
+        $resourceClass = $this->resourceClass;
+
+        return $resourceClass::newModel();
+    }
+
+    /**
+     * @return \Laravel\Nova\Resource
+     */
+    protected function getResource(): Resource
+    {
+        /** @var \Laravel\Nova\Resource $resourceClass */
+        $resourceClass = $this->resourceClass;
+
+        /** @var \Laravel\Nova\Resource $instance */
+        $instance = new $resourceClass($this->getModel());
+
+        return $instance;
     }
 }
