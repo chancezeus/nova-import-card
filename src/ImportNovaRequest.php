@@ -6,27 +6,33 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 
 class ImportNovaRequest extends NovaRequest
 {
+    /** @var array */
     protected $data;
 
-    public function __construct($data)
+    /**
+     * @param array $data
+     */
+    public function __construct(array $data)
     {
         parent::__construct();
+
         $this->data = $data;
     }
 
     /**
      * Retrieve an input item from the request.
      *
-     * @param  string|null $key
-     * @param  string|array|null $default
+     * @param string|null $key
+     * @param string|array|null $default
      * @return string|array|null
      */
     public function input($key = null, $default = null)
     {
-        if (! $key) {
+        if (!$key) {
             return $this->data;
         }
-        if (! isset($this->data[$key])) {
+
+        if (!isset($this->data[$key])) {
             return $default;
         }
 

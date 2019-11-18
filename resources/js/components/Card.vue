@@ -43,7 +43,7 @@
 
 <script>
 export default {
-    props: ['card'],
+    props: ['card', 'resourceId'],
 
     data() {
         return {
@@ -73,6 +73,11 @@ export default {
             this.working = true;
             let formData = new FormData();
             formData.append('file', this.file);
+
+            if (this.resourceId) {
+                formData.append('resourceId', this.resourceId);
+            }
+
             Nova.request()
                 .post(
                     '/nova-vendor/sparclex/nova-import-card/endpoint/' + this.card.resource,

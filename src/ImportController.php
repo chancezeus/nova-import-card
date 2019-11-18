@@ -2,24 +2,32 @@
 
 namespace Sparclex\NovaImportCard;
 
-use Laravel\Nova\Actions\Action;
-use Laravel\Nova\Rules\Relatable;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Nova\Http\Requests\NovaRequest;
 use Illuminate\Validation\ValidationException;
+use Laravel\Nova\Actions\Action;
+use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Rules\Relatable;
 use Maatwebsite\Excel\Exceptions\NoTypeDetectedException;
 
 class ImportController
 {
+    /**
+     * @param \Laravel\Nova\Http\Requests\NovaRequest $request
+     * @return array
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function handle(NovaRequest $request)
     {
         $resource = $request->newResource();
+
+        /** @var \Sparclex\NovaImportCard\BasicImporter $importerClass */
         $importerClass = $resource::$importer ?? config('nova-import-card.importer');
 
         $data = Validator::make($request->all(), [
             'file' => 'required|file',
         ])->validate();
 
+        /** @var \Sparclex\NovaImportCard\BasicImporter $importer */
         $importer = new $importerClass(
             $resource,
             $resource->creationFields($request)->pluck('attribute'),
@@ -40,11 +48,21 @@ class ImportController
         return Action::message($message);
     }
 
+    /**
+     * @param \Laravel\Nova\Http\Requests\NovaRequest $request
+     * @param \Laravel\Nova\Resource $resource
+     * @return \Illuminate\Support\Collection
+     */
     protected function extractValidationRules($request, $resource)
     {
+        $className = get_class($resource);
+        if (method_exists($className, 'importRules')) {
+            return collect($className::importRules($request));
+        }
+
         return collect($resource::rulesForCreation($request))->mapWithKeys(function ($rule, $key) {
             foreach ($rule as $i => $r) {
-                if (! is_object($r)) {
+                if (!is_object($r)) {
                     continue;
                 }
 
@@ -62,6 +80,10 @@ class ImportController
         });
     }
 
+    /**
+     * @param string $error
+     * @throws \Illuminate\Validation\ValidationException
+     */
     private function responseError($error)
     {
         throw ValidationException::withMessages([

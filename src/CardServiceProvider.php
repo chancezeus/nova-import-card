@@ -2,10 +2,9 @@
 
 namespace Sparclex\NovaImportCard;
 
-use Laravel\Nova\Nova;
-use Laravel\Nova\Events\ServingNova;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Nova\Nova;
 
 class CardServiceProvider extends ServiceProvider
 {
@@ -21,12 +20,12 @@ class CardServiceProvider extends ServiceProvider
         });
 
         $this->publishes([
-            __DIR__.'/config.php' => config_path('nova-import-card.php'),
+            __DIR__ . '/config.php' => config_path('nova-import-card.php'),
         ]);
 
-        Nova::serving(function (ServingNova $event) {
-            Nova::script('nova-import-card', __DIR__.'/../dist/js/card.js');
-            Nova::style('nova-import-card', __DIR__.'/../dist/css/card.css');
+        Nova::serving(function () {
+            Nova::script('nova-import-card', __DIR__ . '/../dist/js/card.js');
+            Nova::style('nova-import-card', __DIR__ . '/../dist/css/card.css');
         });
     }
 
@@ -42,8 +41,8 @@ class CardServiceProvider extends ServiceProvider
         }
 
         Route::middleware(['nova'])
-                ->prefix('nova-vendor/sparclex/nova-import-card')
-                ->group(__DIR__.'/../routes/api.php');
+            ->prefix('nova-vendor/sparclex/nova-import-card')
+            ->group(__DIR__ . '/../routes/api.php');
     }
 
     /**
@@ -53,8 +52,6 @@ class CardServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(
-            __DIR__.'/config.php', 'nova-import-card'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/config.php', 'nova-import-card');
     }
 }

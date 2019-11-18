@@ -4,6 +4,7 @@ namespace Sparclex\NovaImportCard;
 
 use Laravel\Nova\Card;
 use Laravel\Nova\Fields\File;
+use Laravel\Nova\Resource;
 
 class NovaImportCard extends Card
 {
@@ -14,9 +15,19 @@ class NovaImportCard extends Card
      */
     public $width = '1/2';
 
-    public function __construct($resource)
+    /**
+     * @param string $resource
+     */
+    public function __construct(string $resource)
     {
         parent::__construct();
+
+        if (!is_subclass_of($resource, Resource::class)) {
+            throw new \InvalidArgumentException(sprintf('Expected $resource to extend %s got %s', Resource::class, $resource));
+        }
+
+        /** @var \Laravel\Nova\Resource $resource */
+
         $this->withMeta([
             'fields' => [
                 new File('File'),
